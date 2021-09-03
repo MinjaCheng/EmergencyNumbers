@@ -9,6 +9,7 @@ const DepartmentsContext = React.createContext(departments);
 
 export default function App() {
   
+  const flatlistRef = useRef();
   const [getData, setGetData] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [countryInfo, setCountryInfo] = useState({
@@ -18,9 +19,10 @@ export default function App() {
     name: "Sweden", 
     medical: "112"
   });
-  
+
   const updateCountryIndex = (index) => {
     setCountryInfo(getData[index]);
+    flatlistRef.current.scrollToIndex({index: 0});
   }
   
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function App() {
         isLoading={isLoading} 
         data={getData}
         countrySelected={updateCountryIndex}
+        flatlistRef={flatlistRef}
       />
       <StatusBar style="auto" />
     </View>
@@ -58,7 +61,7 @@ export default function App() {
 
 function AppName() {
   return (
-    <Text>Emergency<span>Numbers</span></Text>
+    <Text style={styles.appNameText}>Emergency<span style={{ color: '#bdbdbd'}}>Numbers</span></Text>
   );
 } 
 
@@ -66,16 +69,16 @@ function Flag(props) {
   return (
     <Image
       source={{
-        uri: `http://emergency-phone-numbers.herokuapp.com/images/${props.countryInfo.code.toLowerCase()}.jpg`,
+        uri: `http://emergency-phone-numbers.herokuapp.com/images/${props.countryInfo.code.toLowerCase()}.jpg`
       }}
-      style={{ width: 100, height: 70 }}
+      style={styles.flagImage}
     />
   );
 }
 
 function Country(props) {
   return (
-    <Text>{props.countryInfo.name}</Text>
+    <Text style={styles.countryName}>{props.countryInfo.name}</Text>
   );
 }
 
@@ -83,16 +86,16 @@ function Numbers(props) {
   const dep = useContext(DepartmentsContext);
   return (
     <View style={{ alignItems: 'center' }}>
-      <View>
-        <Text>{dep[0]}</Text>
+      <View style={styles.depContainer}>
+        <Text style={styles.depName}>{dep[0]}</Text>
         <Text>{props.countryInfo.police}</Text>
       </View>
-      <View>
-        <Text>{dep[1]}</Text>
+      <View style={styles.depContainer}>
+        <Text style={styles.depName}>{dep[1]}</Text>
         <Text>{props.countryInfo.medical}</Text>
       </View>
-      <View>
-        <Text>{dep[2]}</Text>
+      <View style={styles.depContainer}>
+        <Text style={styles.depName}>{dep[2]}</Text>
         <Text>{props.countryInfo.fire}</Text>
       </View>
     </View>
@@ -100,23 +103,17 @@ function Numbers(props) {
 }
 
 function ListOfCountries (props) {
-  const flatlistRef = useRef();
-
-  const onPressFunction = () => {
-    flatlistRef.current.scrollToIndex({index: 0});
-  };
-
   return (
     <View style={ styles.listContainer }>
       {props.isLoading ? <ActivityIndicator/> : (
         <FlatList
-        ref={flatlistRef}
+        ref={props.flatlistRef}
         data={props.data}
         keyExtractor={( item , index) => 'key'+index}
-        ListHeaderComponent={() => <Text>Select Country</Text>}
+        ListHeaderComponent={() => <Text>Select a country:</Text>}
         renderItem={({ item, index }) => (
           <Text
-            onPress={() => props.countrySelected(index), onPressFunction} 
+            onPress={() => props.countrySelected(index)} 
             style={ styles.listText }>
               { item.name }
           </Text>
@@ -130,14 +127,46 @@ function ListOfCountries (props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#4672c4',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  appNameText: {
+    fontSize: 28,
+    fontWeight: 800,
+    color: 'whitesmoke',
+    marginBottom: 25,
+  }, 
+  flagImage: { 
+    width: 65, 
+    height: 50, 
+    marginBottom: 10  
+  },
+  countryName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#22375e',
+    marginBottom: 20,
+  },
+  depContainer: {
+    backgroundColor: '#e6e9f0',
+    height: 45,
+    width: 180,
+    borderWidth: 0.5,
+    borderRadius: 5,
+    marginBottom: 15,
+    textAlign: 'center',
+    justifyContent: 'center'
+  },
+  depName: {
+    fontSize: 15,
+    fontWeight: 'bold'
+  },
   listContainer: { 
     width: 250, 
-    height: 200, 
+    height: 300, 
     padding: 24,
+    marginTop: 15
   },
   listText: {
     padding: 25,
